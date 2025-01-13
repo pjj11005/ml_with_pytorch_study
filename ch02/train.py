@@ -94,18 +94,22 @@ def train_adalinesgd(X, y, X_std):
     # ada_sgd.partial_fit(X_std[0, :], y[0])
 
 
+def main():
+    # 데이터 로드
+    X, y, X_std = load_iris_data()
+    
+    # iris 산점도 시각화
+    # scatter_iris(X)
+    
+    # train Perceptron 
+    # train_perceptron(X, y)
+    
+    # train AdalineGD 
+    # train_adalinegd(X, y, X_std)
+    
+    # train AdalineSGD 
+    train_adalinesgd(X, y, X_std)
 
-# 데이터 로드
-X, y, X_std = load_iris_data()
 
-# iris 산점도 시각화
-# scatter_iris(X)
-
-# train Perceptron 
-# train_perceptron(X, y)
-
-# train AdalineGD 
-# train_adalinegd(X, y, X_std)
-
-# train AdalineSGD 
-train_adalinesgd(X, y, X_std)
+if __name__ == '__main__':
+    main()
