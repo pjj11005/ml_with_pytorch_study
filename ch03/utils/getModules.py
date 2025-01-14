@@ -20,3 +20,14 @@ def load_iris_data():
     X_test_std = sc.transform(X_test)
 
     return X_train, X_test, y_train, y_test, X_train_std, X_test_std
+
+
+# xor data 
+def load_xor_data():
+    np.random.seed(1)
+    X_xor = np.random.randn(200, 2)
+    y_xor = np.logical_xor((X_xor[:, 0] > 0),
+                        X_xor[:, 1] > 0)
+    y_xor = np.where(y_xor, 1, 0)
+
+    return X_xor, y_xor
