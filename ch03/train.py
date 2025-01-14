@@ -3,10 +3,15 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
-from utils.getModules import load_iris_data
-from utils.tools import plot_decision_regions, plot_sigmoid, plot_logistic_loss_function
 from networks.logisticregressiongd import LogisticRegressionGD
+from utils.getModules import load_iris_data, load_xor_data
+from utils.tools import plot_decision_regions, plot_sigmoid, plot_logistic_loss_function, plot_xor_data, plot_entropy, plot_impurity
 
 
 # Perceptron
@@ -95,17 +100,148 @@ def train_lr(X_train_std, X_test_std, y_train, X_combined_std, y_combined, multi
     # plt.savefig('figures/03_08.png', dpi=300)
     plt.show()
 
+
+# SVM
+def train_svm(X_train_std, y_train, X_combined_std, y_combined):
+    # train
+    svm = SVC(kernel='linear', C=1.0, random_state=1)
+    svm.fit(X_train_std, y_train)
+
+    # decision boundary
+    plot_decision_regions(X_combined_std, y_combined, classifier=svm,
+                        test_idx=range(105, 150))
+    plt.xlabel('Petal length [standardized]')
+    plt.ylabel('Petal width [standardized]')
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_11.png', dpi=300)
+    plt.show()
+
+
+# kernel SVM
+def train_kernel_svm(X_xor, y_xor, X_train_std, y_train, X_combined_std, y_combined):
+    # train
+    svm = SVC(kernel='rbf', random_state=1, gamma=0.10, C=10.0)
+    svm.fit(X_xor, y_xor)
+
+    # decision boundary
+    plot_decision_regions(X_xor, y_xor,
+                        classifier=svm)
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_14.png', dpi=300)
+    plt.show()
+
+    # train(gamma=0.2)
+    svm = SVC(kernel='rbf', random_state=1, gamma=0.2, C=1.0)
+    svm.fit(X_train_std, y_train)
+
+    # decision boundary
+    plot_decision_regions(X_combined_std, y_combined,
+                        classifier=svm, test_idx=range(105, 150))
+    plt.xlabel('Petal length [standardized]')
+    plt.ylabel('Petal width [standardized]')
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_15.png', dpi=300)
+    plt.show()
+
+    # train(gamma=100.0) -> 규제 완화
+    svm = SVC(kernel='rbf', random_state=1, gamma=100.0, C=1.0)
+    svm.fit(X_train_std, y_train)
+
+    # decision boundary
+    plot_decision_regions(X_combined_std, y_combined,
+                        classifier=svm, test_idx=range(105, 150))
+    plt.xlabel('Petal length [standardized]')
+    plt.ylabel('Petal width [standardized]')
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_16.png', dpi=300)
+    plt.show()
+
+
+# DecisionTree
+def train_dt(X_train, y_train, X_combined, y_combined):
+    # train
+    tree_model = DecisionTreeClassifier(criterion='gini',
+                                    max_depth=4,
+                                    random_state=1)
+    tree_model.fit(X_train, y_train)
+
+    # decision boundary
+    plot_decision_regions(X_combined, y_combined,
+                      classifier=tree_model,
+                      test_idx=range(105, 150))
+    plt.xlabel('Petal length [cm]')
+    plt.ylabel('Petal width [cm]')
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_20.png', dpi=300)
+    plt.show()
+
+    # tree structure
+    feature_names = ['Petal length', 'Petal width']
+    tree.plot_tree(tree_model,
+                feature_names=feature_names,
+                filled=True)
+    # plt.savefig('figures/03_21.pdf')
+    plt.show()
+
+
+# RandomForest
+def train_rf(X_train, y_train, X_combined, y_combined):
+    # train
+    forest = RandomForestClassifier(n_estimators=25,
+                                random_state=1,
+                                n_jobs=2)
+    forest.fit(X_train, y_train)
+
+    # decision boundary
+    plot_decision_regions(X_combined, y_combined,
+                        classifier=forest, test_idx=range(105, 150))
+    plt.xlabel('Petal length [cm]')
+    plt.ylabel('Petal width [cm]')
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_22.png', dpi=300)
+    plt.show()
+
+
+# KNN
+def train_knn(X_train_std, y_train, X_combined_std, y_combined):
+    # train
+    knn = KNeighborsClassifier(n_neighbors=5,
+                           p=2,
+                           metric='minkowski')
+    knn.fit(X_train_std, y_train)
+
+    # decision boundary
+    plot_decision_regions(X_combined_std, y_combined,
+                        classifier=knn, test_idx=range(105, 150))
+    plt.xlabel('Petal length [standardized]')
+    plt.ylabel('Petal width [standardized]')
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    # plt.savefig('figures/03_24.png', dpi=300)
+    plt.show()
+
+
 def main():
     # data load
     X_train, X_test, y_train, y_test, X_train_std, X_test_std = load_iris_data()
 
     # data combine
     X_combined_std = np.vstack((X_train_std, X_test_std))
+    X_combined = np.vstack((X_train, X_test))
     y_combined = np.hstack((y_train, y_test))
 
     # class 0, class 1 -> subset
     X_train_01_subset = X_train_std[(y_train == 0) | (y_train == 1)]
     y_train_01_subset = y_train[(y_train == 0) | (y_train == 1)]
+
+    # xor data load
+    X_xor, y_xor = load_xor_data()
 
     '''train Perceptron'''
     # train_ppn(X_train_std, X_test_std, y_train, y_test, X_combined_std, y_combined)
@@ -120,7 +256,32 @@ def main():
     # train_lrgd(X_train_01_subset, y_train_01_subset)
 
     '''train LogisticRegression'''
-    train_lr(X_train_std, X_test_std, y_train, X_combined_std, y_combined)
+    # train_lr(X_train_std, X_test_std, y_train, X_combined_std, y_combined)
+
+    '''train SVM'''
+    # train_svm(X_train_std, y_train, X_combined_std, y_combined)
+
+    '''plot xor data'''
+    # plot_xor_data()
+
+    '''train kernel SVM'''
+    # train_kernel_svm(X_xor, y_xor, X_train_std, y_train, X_combined_std, y_combined)
+
+    '''plot entropy'''
+    # plot_entropy()
+
+    '''plot impurity'''
+    # plot_impurity()
+
+    '''train DecisionTree'''
+    # train_dt(X_train, y_train, X_combined, y_combined)
+
+    '''train RandomForest'''
+    # train_rf(X_train, y_train, X_combined, y_combined)
+
+    '''train KNN'''
+    train_knn(X_train_std, y_train, X_combined_std, y_combined)
+
 
 if __name__ == '__main__':
     main()
