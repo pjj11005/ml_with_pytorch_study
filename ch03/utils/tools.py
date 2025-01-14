@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib
 from distutils.version import LooseVersion
 
+from utils.getModules import load_xor_data
 
 # decision regions
 def plot_decision_regions(X, y, classifier, test_idx=None, resolution=0.02):
@@ -105,4 +106,85 @@ def plot_logistic_loss_function():
     # plt.savefig('figures/03_04.png', dpi=300)
     plt.show()
 
-    
+
+# plot xor data
+def plot_xor_data():
+    X_xor, y_xor = load_xor_data()
+
+    plt.scatter(X_xor[y_xor == 1, 0],
+            X_xor[y_xor == 1, 1],
+            c='royalblue',
+            marker='s',
+            label='Class 1')
+    plt.scatter(X_xor[y_xor == 0, 0],
+                X_xor[y_xor == 0, 1],
+                c='tomato',
+                marker='o',
+                label='Class 0')
+
+    plt.xlim([-3, 3])
+    plt.ylim([-3, 3])
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+
+    plt.legend(loc='best')
+    plt.tight_layout()
+    # plt.savefig('figures/03_12.png', dpi=300)
+    plt.show()
+
+
+# gini
+def gini(p):
+    return p * (1 - p) + (1 - p) * (1 - (1 - p))
+
+
+# entropy
+def entropy(p):
+    return - p * np.log2(p) - (1 - p) * np.log2((1 - p))
+
+
+# error
+def error(p):
+    return 1 - np.max([p, 1 - p])
+
+
+# plot entropy
+def plot_entropy():
+    x = np.arange(0.0, 1.0, 0.01)
+    ent = [entropy(p) if p != 0 else None
+        for p in x]
+
+    plt.ylabel('Entropy')
+    plt.xlabel('Class-membership probability p(i=1)')
+    plt.plot(x, ent)
+    # plt.savefig('figures/03_18.png', dpi=300)
+    plt.show()
+
+
+# plot impurity
+def plot_impurity():
+    x = np.arange(0.0, 1.0, 0.01)
+
+    ent = [entropy(p) if p != 0 else None for p in x]
+    sc_ent = [e * 0.5 if e else None for e in ent]
+    err = [error(i) for i in x]
+
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    for i, lab, ls, c, in zip([ent, sc_ent, gini(x), err],
+                            ['Entropy', 'Entropy (scaled)',
+                            'Gini impurity', 'Misclassification error'],
+                            ['-', '-', '--', '-.'],
+                            ['black', 'lightgray', 'red', 'green', 'cyan']):
+        line = ax.plot(x, i, label=lab, linestyle=ls, lw=2, color=c)
+
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
+            ncol=5, fancybox=True, shadow=False)
+
+    ax.axhline(y=0.5, linewidth=1, color='k', linestyle='--')
+    ax.axhline(y=1.0, linewidth=1, color='k', linestyle='--')
+    plt.ylim([0, 1.1])
+    plt.xlabel('p(i=1)')
+    plt.ylabel('Impurity index')
+    # plt.savefig('figures/03_19.png', dpi=300, bbox_inches='tight')
+    plt.show()
